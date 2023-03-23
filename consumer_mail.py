@@ -9,6 +9,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from jinja2 import Environment, PackageLoader, select_autoescape
 from pika import BlockingConnection
+from pika import PlainCredentials
+from pika import ConnectionParameters
 
 logging.addLevelName(15, "DATA")
 logging.DATA = 15
@@ -33,6 +35,12 @@ mail_server = os.environ['MAIL_SERVER']
 mail_port = int(os.environ['MAIL_PORT'])
 mail_user = os.environ['MAIL_USERNAME']
 mail_password = os.environ['MAIL_PASSWORD']
+
+rabbitmq_host = os.environ['RABBITMQ_HOST']
+rabbitmq_port = int(os.environ['RABBITMQ_PORT'])
+rabbitmq_id = os.environ['RABBITMQ_ID']
+rabbitmq_password = os.environ['RABBITMQ_PASSWORD']
+rabbitmq_cred = PlainCredentials(rabbitmq_id, rabbitmq_password)
 
 server = smtplib.SMTP_SSL(mail_server, mail_port)
 server.login(mail_user, mail_password)
@@ -89,7 +97,9 @@ def on_message(to_channel, method_frame, header_frame, body):
 
 
 if __name__ == '__main__':
-    connection = BlockingConnection()
+    connection = BlockingConnection(
+        ConnectionParameters(host=rabbitmq_host, port=rabbitmq_port, credentials=rabbitmq_cred)
+    )
     channel = connection.channel()
     channel.basic_consume(queue='mail.queue', on_message_callback=on_message)
 
@@ -101,10 +111,3 @@ if __name__ == '__main__':
     except StopIteration:
         server.quit()
         channel.stop_consuming()
-
-    # img = qrcode.make('hello')
-    # buffered = BytesIO()
-    # img.save(buffered, "PNG")
-    # img_str = u"data:image/png;base64," + base64.b64encode(buffered.getvalue()).decode("ascii")
-    # # print(img_str)
-    # data['qrcode'] = img_str
