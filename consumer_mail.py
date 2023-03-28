@@ -101,7 +101,12 @@ if __name__ == '__main__':
         ConnectionParameters(host=rabbitmq_host, port=rabbitmq_port, credentials=rabbitmq_cred)
     )
     channel = connection.channel()
-    channel.basic_consume(queue='mail.queue', on_message_callback=on_message)
+
+    argument = {
+        "x-queue-type": "quorum"
+    }
+
+    channel.basic_consume(queue='mail.queue', on_message_callback=on_message, arguments=argument)
 
     try:
         channel.start_consuming()
