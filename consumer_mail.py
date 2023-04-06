@@ -2,6 +2,8 @@ import base64
 import json
 import os
 import smtplib
+from email.mime.image import MIMEImage
+
 import qrcode
 import logging
 from io import BytesIO
@@ -53,6 +55,13 @@ def make(sender, receiver, content):
     msg['To'] = receiver
     html = MIMEText(content, 'html')
     msg.attach(html)
+
+    assert os.path.isfile("./qrcode.png"), 'image file does not exist.'
+    with open("./qrcode.png", 'rb') as img_file:
+        mime_img = MIMEImage(img_file.read())
+        mime_img.add_header('Content-ID', '<' + 'qrcode' + '>')
+    msg.attach(mime_img)
+
     return msg
 
 
@@ -81,15 +90,13 @@ def make_qr(reservation_id):
     qr.add_data(reservation_id)
     qr.make(fit=True)
     qr_img = qr.make_image()
-    qr_img.save(buffered, "PNG")
-    img_str = u"data:image/png;base64," + base64.b64encode(buffered.getvalue()).decode("ascii")
-    return img_str
+    qr_img.save("./qrcode.png")
 
 
 def on_message(to_channel, method_frame, header_frame, body):
     body = body.decode()
     data = json.loads(body)
-    data['qrcode'] = make_qr(data['reservationId'])
+    make_qr(data['reservationId'])
 
     logger.log(logging.DATA, data)
     send(data['memberEmail'], data)
