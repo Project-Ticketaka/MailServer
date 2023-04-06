@@ -87,7 +87,7 @@ def make_qr(reservation_id):
     )
     buffered = BytesIO()
 
-    qr.add_data(reservation_id)
+    qr.add_data("reservation_id: " + reservation_id)
     qr.make(fit=True)
     qr_img = qr.make_image()
     qr_img.save("./qrcode.png")
