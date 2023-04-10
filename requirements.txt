@@ -1,5 +1,4 @@
 asgiref==3.6.0
-backports.zoneinfo==0.2.1
 colorama==0.4.6
 Django==4.2
 image==1.5.33
