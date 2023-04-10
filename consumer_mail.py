@@ -44,7 +44,8 @@ rabbitmq_id = os.environ['RABBITMQ_ID']
 rabbitmq_password = os.environ['RABBITMQ_PASSWORD']
 rabbitmq_cred = PlainCredentials(rabbitmq_id, rabbitmq_password)
 
-server = smtplib.SMTP_SSL(mail_server, mail_port)
+server = smtplib.SMTP('smtp.gmail.com', mail_port)
+server.starttls()
 server.login(mail_user, mail_password)
 
 
